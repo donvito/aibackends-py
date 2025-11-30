@@ -8,9 +8,9 @@ api_base_url = "http://localhost:11434/v1"
 
 class OllamaClient(BaseProvider):
     def __init__(self):
-        pass
+        super().__init__()
 
-    def generate_text_completion(self, model: str, system_prompt: str, message: str):
+    def generate_text_completion(self, model: str, system_prompt: str, user_prompt: str, **kwargs):
 
         client = OpenAI(
             api_key="",
@@ -19,7 +19,7 @@ class OllamaClient(BaseProvider):
 
         messages = [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": message},
+            {"role": "user", "content": user_prompt},
         ]
 
         completion = client.chat.completions.create(

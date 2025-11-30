@@ -1,10 +1,10 @@
 from aibackends import Agent
 from aibackends.llm.lmstudio import LMStudioClient
-from aibackends.tasks.summarize_text import SummarizeText
-from aibackends.tasks.translate_text import TranslateText
+from aibackends.tasks.llm.text_completion_task import TextCompletionTask
+import pytest
 
-
-def test_agent_with_tasks():
+@pytest.mark.asyncio
+async def test_agent_with_tasks():
     text = """The rapid diffusion of large language models (LLMs) is mediated by an emerging market for AI inference. 
     However, its economic structure is poorly understood due to challenges in measuring LLM usage. 
     While some fear AI will inevitably evolve into an oligopolistic structure with winner-take-most dynamics, 
@@ -23,25 +23,29 @@ def test_agent_with_tasks():
     hidden factors proving far larger than previously recognized, reframing open models as a largely latent, but high-potential, 
     source of value in the AI economy.
     """
-    model = "qwen/qwen3-coder-30b"
+    model = "google/gemma-3-4b"
 
     llm = LMStudioClient()
 
     tasks = [
-        SummarizeText(
+        TextCompletionTask(
+            task_id="001",
+            name="Summarize Text",
             provider=llm,
             model=model,
-            text=text),
-        TranslateText(
+            system_prompt="Summarize the following text, reply only with the summary:",
+            user_prompt=text),
+        TextCompletionTask(
+            task_id="002",
+            name="Translate Text",
             provider=llm,
             model=model,
-            text=text,
-            target_language="chinese")
+            system_prompt="Translate the following text to Chinese, reply only with the translation:",
+            user_prompt=text),
     ]
 
     agent = Agent(name="DocumentAssistant", tasks=tasks)
-    agent.run_tasks()
-    results = agent.get_results()
+    results = await agent.run_tasks()
 
     print("RESULTS\n============================\n")
     for result in results:

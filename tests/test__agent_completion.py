@@ -1,9 +1,15 @@
 from aibackends import Agent, OllamaClient
+from aibackends.llm.lmstudio import LMStudioClient
 from aibackends.tasks.llm.text_completion_task import TextCompletionTask
 import pytest
+import mlflow
 
 @pytest.mark.asyncio
 async def test_agent_with_tasks():
+    mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow.set_experiment("Tracing Agent")
+    mlflow.openai.autolog()
+
     text = """The rapid diffusion of large language models (LLMs) is mediated by an emerging market for AI inference. 
     However, its economic structure is poorly understood due to challenges in measuring LLM usage. 
     While some fear AI will inevitably evolve into an oligopolistic structure with winner-take-most dynamics, 
@@ -22,23 +28,32 @@ async def test_agent_with_tasks():
     hidden factors proving far larger than previously recognized, reframing open models as a largely latent, but high-potential, 
     source of value in the AI economy.
     """
-    model = "gemma3:4b"
 
-    llm = OllamaClient()
+    lmstudio = LMStudioClient()
+    lmstudio_model = "openai/gpt-oss-20b"
+
+    ollama = OllamaClient()
+    ollama_model = "gemma3:4b"
 
     tasks = [
         TextCompletionTask(
-            task_id="001",
             name="Summarize Text",
-            provider=llm,
-            model=model,
+            provider=ollama,
+            model=ollama_model,
             system_prompt="Summarize the following text, reply only with the summary:",
+            user_prompt=text,
+            max_tokens=20),
+        TextCompletionTask(
+            name="Translate Text Chinese",
+            provider=lmstudio,
+            model=lmstudio_model,
+            system_prompt="Translate the following text to Chinese, reply only with the translation:",
             user_prompt=text),
         TextCompletionTask(
-            name="Translate Text",
-            provider=llm,
-            model=model,
-            system_prompt="Translate the following text to Chinese, reply only with the translation:",
+            name="Translate Text Tagalog",
+            provider=lmstudio,
+            model=lmstudio_model,
+            system_prompt="Translate the following text to Tagalog, reply only with the translation:",
             user_prompt=text),
     ]
 

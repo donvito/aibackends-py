@@ -7,4 +7,6 @@ name = "aibackends"
 version = "0.1.0"
 description = "AI backends library"
 dependencies = [
+    "pytest-asyncio",
+    "mlflow>=3.1"
 ]
